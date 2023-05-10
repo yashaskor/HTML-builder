@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const COMPONENTS_DIR = './components';
-const STYLES_DIR = './styles';
-const ASSETS_DIR = './assets';
-const TEMPLATE_FILE = './template.html';
-const PROJECT_DIST_DIR = './project-dist';
-const INDEX_FILE = './project-dist/index.html';
-const STYLE_FILE = './project-dist/style.css';
+const COMPONENTS_DIR = path.join(__dirname,'components');
+const STYLES_DIR = path.join(__dirname,'styles');
+const ASSETS_DIR = path.join(__dirname,'assets');
+const TEMPLATE_FILE = path.join(__dirname,'template.html');
+const PROJECT_DIST_DIR = path.join(__dirname,'project-dist');
+const INDEX_FILE = path.join(__dirname, 'project-dist', 'index.html');
+const STYLE_FILE = path.join(__dirname, 'project-dist', 'style.css');
 
 const componentsMap = new Map();
 let stylesContent = '';
@@ -66,9 +66,14 @@ async function processStyles() {
 }
 
 async function copyAssets() {
-  const srcDir = path.join(__dirname, ASSETS_DIR);
-  const destDir = path.join(__dirname, PROJECT_DIST_DIR, ASSETS_DIR);
-  await copyDir(srcDir, destDir);
+  const srcDir = ASSETS_DIR;
+  const destDir = path.join(__dirname, 'project-dist', 'assets');;
+  try {
+    await copyDir(srcDir, destDir);
+    console.log('Success: assets copied');
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+  }
 }
 
 async function copyDir(src, dest) {
