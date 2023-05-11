@@ -1,10 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-async function copyDir() {
-  const sourceDir = path.join(__dirname, 'files');
-  const destinationDir = path.join(__dirname, 'files-copy');
-
+async function copyDir(sourceDir, destinationDir) {
   try {
     await fs.access(destinationDir);
   } catch (error) {
@@ -12,21 +9,31 @@ async function copyDir() {
   }
 
   const files = await fs.readdir(sourceDir);
+  const promises = [];
 
-  await Promise.all(
-    files.map(async file => {
-      const sourcePath = path.join(sourceDir, file);
-      const destinationPath = path.join(destinationDir, file);
+  for (const file of files) {
+    const sourcePath = path.join(sourceDir, file);
+    const destinationPath = path.join(destinationDir, file);
 
-      const fileStats = await fs.stat(sourcePath);
+    const fileStats = await fs.stat(sourcePath);
 
-      if (fileStats.isDirectory()) {
-        await copyDir(sourcePath, destinationPath);
-      } else {
-        await fs.copyFile(sourcePath, destinationPath);
-      }
-    })
-  );
+    if (fileStats.isDirectory()) {
+      const promise = copyDir(sourcePath, destinationPath);
+      promises.push(promise);
+    } else {
+      const promise = fs.copyFile(sourcePath, destinationPath);
+      promises.push(promise);
+    }
+  }
+
+  await Promise.all(promises);
 }
 
-copyDir();
+const sourceDir = path.join(__dirname, 'files');
+const destinationDir = path.join(__dirname, 'files-copy');
+
+copyDir(sourceDir, destinationDir).then(() => {
+  console.log('Copy completed');
+}).catch((error) => {
+  console.error(error);
+});
