@@ -85,9 +85,28 @@ async function copyDir(src, dest) {
     if (entry.isDirectory()) {
       await copyDir(srcPath, destPath);
     } else {
-      await fs.promises.copyFile(srcPath, destPath);
+      const srcFileStat = await fs.promises.stat(srcPath);
+      const destFileStat = await getFileStat(destPath);
+      if (!destFileStat || srcFileStat.mtimeMs > destFileStat.mtimeMs) {
+        await fs.promises.copyFile(srcPath, destPath);
+      }
     }
   }
 }
+        
+        async function getFileStat(filePath) {
+        try {
+        return await fs.promises.stat(filePath);
+        } catch (err) {
+        if (err.code === 'ENOENT') {
+        return null;
+        } else {
+        throw err;
+        }
+        }
+        }
+    
+  
+
 
 main();
